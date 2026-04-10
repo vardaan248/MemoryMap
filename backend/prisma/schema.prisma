@@ -1,0 +1,188 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+//  Users
+// ─────────────────────────────────────────────
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  avatarUrl     String?
+  bio           String?
+  googleId      String?  @unique
+  passwordHash  String?
+  isVerified    Boolean  @default(false)
+  isPublic      Boolean  @default(false)
+
+  // Stats (denormalized for fast reads)
+  totalTrips      Int    @default(0)
+  totalCountries  Int    @default(0)
+  totalPhotos     Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trips         Trip[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+//  Sessions (for refresh token management)
+// ─────────────────────────────────────────────
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  userAgent    String?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ─────────────────────────────────────────────
+//  Trips
+// ─────────────────────────────────────────────
+model Trip {
+  id          String     @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  coverImage  String?
+  slug        String     @unique  // For public sharing URLs
+  isPublic    Boolean    @default(false)
+  status      TripStatus @default(DRAFT)
+
+  startDate   DateTime?
+  endDate     DateTime?
+
+  // Aggregated geo data
+  countries   String[]   // ISO country codes visited
+  cities      String[]
+
+  // Stats
+  entryCount  Int        @default(0)
+  photoCount  Int        @default(0)
+  totalDays   Int        @default(0)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries     Entry[]
+  tags        TripTag[]
+
+  @@index([userId])
+  @@index([slug])
+  @@map("trips")
+}
+
+enum TripStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+// ─────────────────────────────────────────────
+//  Tags
+// ─────────────────────────────────────────────
+model Tag {
+  id    String    @id @default(uuid())
+  name  String    @unique
+  trips TripTag[]
+
+  @@map("tags")
+}
+
+model TripTag {
+  tripId String
+  tagId  String
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([tripId, tagId])
+  @@map("trip_tags")
+}
+
+// ─────────────────────────────────────────────
+//  Journal Entries
+// ─────────────────────────────────────────────
+model Entry {
+  id       String @id @default(uuid())
+  tripId   String
+  title    String
+  content  Json   // Rich text stored as Tiptap JSON
+  mood     Mood?
+  weather  String?
+  date     DateTime
+
+  // Location
+  locationName String?
+  country      String?
+  city         String?
+  latitude     Float?
+  longitude    Float?
+
+  // Ordering within trip
+  order    Int   @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trip   Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  photos Photo[]
+
+  @@index([tripId])
+  @@map("entries")
+}
+
+enum Mood {
+  AMAZING
+  HAPPY
+  NEUTRAL
+  TIRED
+  CHALLENGED
+}
+
+// ─────────────────────────────────────────────
+//  Photos
+// ─────────────────────────────────────────────
+model Photo {
+  id          String  @id @default(uuid())
+  entryId     String
+  url         String   // Cloudinary URL (original)
+  thumbnailUrl String  // Cloudinary URL (thumb, 400px)
+  caption     String?
+  width       Int?
+  height      Int?
+  order       Int     @default(0)
+
+  // EXIF data (extracted server-side)
+  takenAt     DateTime?
+  latitude    Float?
+  longitude   Float?
+
+  createdAt DateTime @default(now())
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId])
+  @@map("photos")
+}

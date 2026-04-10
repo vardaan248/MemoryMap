@@ -1,0 +1,219 @@
+// ── Design Tokens ─────────────────────────────────────
+:host {
+  --sidebar-w: 220px;
+  --brand: #1a1a2e;
+  --brand-accent: #c8a97e;
+  --sidebar-bg: #0f0f1a;
+  --sidebar-text: rgba(255, 255, 255, 0.65);
+  --sidebar-text-active: #ffffff;
+  --sidebar-active-bg: rgba(200, 169, 126, 0.12);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.05);
+  --radius: 12px;
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// ── Shell Layout ──────────────────────────────────────
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f8f7f4;
+
+  &.authenticated {
+    .main-content {
+      margin-left: var(--sidebar-w);
+    }
+  }
+}
+
+// ── Sidebar ───────────────────────────────────────────
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow: hidden;
+
+  // Subtle noise texture overlay
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+  }
+}
+
+// ── Logo ──────────────────────────────────────────────
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  .logo-icon {
+    font-size: 20px;
+    color: var(--brand-accent);
+    line-height: 1;
+  }
+
+  .logo-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.02em;
+  }
+}
+
+// ── Nav ───────────────────────────────────────────────
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: all var(--transition);
+  position: relative;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    transition: color var(--transition);
+  }
+
+  &:hover {
+    background: var(--sidebar-hover-bg);
+    color: var(--sidebar-text-active);
+  }
+
+  &.active {
+    background: var(--sidebar-active-bg);
+    color: var(--sidebar-text-active);
+
+    svg {
+      color: var(--brand-accent);
+    }
+
+    // Gold left border indicator
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 18px;
+      background: var(--brand-accent);
+      border-radius: 0 3px 3px 0;
+    }
+  }
+}
+
+// ── Footer / User ─────────────────────────────────────
+.sidebar-footer {
+  padding: 16px 12px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(200, 169, 126, 0.2);
+  border: 1.5px solid rgba(200, 169, 126, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: var(--brand-accent);
+  font-weight: 600;
+  font-size: 13px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+
+  .user-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: color var(--transition);
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.65);
+  }
+}
+
+// ── Main Content ──────────────────────────────────────
+.main-content {
+  flex: 1;
+  min-height: 100vh;
+  transition: margin-left var(--transition);
+}
+
+// ── Mobile Responsive ─────────────────────────────────
+@media (max-width: 768px) {
+  :host {
+    --sidebar-w: 0px;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+
+    &.open {
+      transform: translateX(0);
+      width: 260px;
+    }
+  }
+
+  .app-shell.authenticated .main-content {
+    margin-left: 0;
+  }
+}
