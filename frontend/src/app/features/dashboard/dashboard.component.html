@@ -1,0 +1,202 @@
+<div class="dashboard">
+  <section class="hero" *ngIf="user$ | async as user">
+    <div class="hero-noise"></div>
+    <div class="hero-left">
+      <p class="hero-kicker">MemoryMap Explorer</p>
+      <h1>
+        {{ greeting | titlecase }}, {{ user.name.split(' ')[0] }}.
+        <span>Where next?</span>
+      </h1>
+      <p class="hero-sub">Plan journeys, capture stories, and discover your travel rhythm in one flow.</p>
+
+      <div class="hero-ctas">
+        <a routerLink="/trips/new" class="btn-hero btn-hero--solid">Plan a new trip</a>
+        <a routerLink="/timeline" class="btn-hero btn-hero--ghost">Open memory timeline</a>
+      </div>
+
+      <div class="hint-chip" (click)="rotateHint()" title="Rotate hint">
+        {{ explorerHints[rotateHintIndex] }}
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="passport-card">
+        <p>Journey readiness</p>
+        <div class="ring" [style.background]="completionRing">
+          <div class="ring-inner">{{ completionScore }}%</div>
+        </div>
+        <small>Tap into all app experiences</small>
+      </div>
+
+      <div class="spark-card">
+        <p>Destination spark</p>
+        <h3>{{ highlightedDestination }}</h3>
+        <button type="button" (click)="surpriseDestination()">Surprise me</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="tabs-wrap">
+    <button
+      type="button"
+      class="tab-btn"
+      *ngFor="let t of tabs"
+      [class.active]="activeTab === t.value"
+      (click)="setTab(t.value)"
+    >
+      {{ t.label }}
+    </button>
+  </div>
+
+  <div class="pulse-grid" *ngIf="user$ | async as user">
+    <article class="pulse-item">
+      <h4>{{ user.totalTrips ?? 0 }}</h4>
+      <p>Trips planned</p>
+    </article>
+    <article class="pulse-item">
+      <h4>{{ geoStats?.totalCountries ?? user.totalCountries ?? 0 }}</h4>
+      <p>Countries touched</p>
+    </article>
+    <article class="pulse-item">
+      <h4>{{ geoStats?.pinnedEntries ?? 0 }}</h4>
+      <p>Pinned moments</p>
+    </article>
+    <article class="pulse-item">
+      <h4>{{ moodChampion }}</h4>
+      <p>Dominant travel mood</p>
+    </article>
+  </div>
+
+  <div class="skeleton-list" *ngIf="loading">
+    <div class="skeleton-row" *ngFor="let i of [1,2,3,4]"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <section class="panel" *ngIf="activeTab === 'overview'">
+      <div class="panel-header">
+        <h2>Live Travel Cockpit</h2>
+        <a routerLink="/trips" class="panel-link">All trips</a>
+      </div>
+
+      <div class="cockpit-grid">
+        <div class="cockpit-card cockpit-card--focus" *ngIf="activeTrip; else noActiveTrip">
+          <p class="kicker">In progress</p>
+          <h3>{{ activeTrip.title }}</h3>
+          <p>Keep this journey alive with fresh entries and geo pins.</p>
+          <a [routerLink]="['/trips', activeTrip.id]">Resume journey</a>
+        </div>
+
+        <ng-template #noActiveTrip>
+          <div class="cockpit-card cockpit-card--focus">
+            <p class="kicker">No active trip</p>
+            <h3>Launch your next adventure</h3>
+            <p>Start with a place, set dates, then let memories build naturally.</p>
+            <a routerLink="/trips/new">Create trip</a>
+          </div>
+        </ng-template>
+
+        <div class="cockpit-card">
+          <p class="kicker">Travel rhythm</p>
+          <h3>Last 6 months</h3>
+          <div class="rhythm-bars" *ngIf="monthlyRhythm.length; else noRhythm">
+            <div class="bar-wrap" *ngFor="let m of monthlyRhythm">
+              <div class="bar" [style.height.px]="m.height"></div>
+              <span>{{ m.month }}</span>
+            </div>
+          </div>
+          <ng-template #noRhythm>
+            <p class="empty-copy">Start journaling to unlock your rhythm graph.</p>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="action-stream">
+        <a class="stream-item" *ngFor="let item of nextBestActions" [routerLink]="item.route">
+          <div>
+            <strong>{{ item.title }}</strong>
+            <p>{{ item.description }}</p>
+          </div>
+          <span>{{ item.cta }}</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="panel" *ngIf="activeTab === 'plan'">
+      <div class="panel-header">
+        <h2>Trip Planner Studio</h2>
+      </div>
+
+      <div class="studio-grid">
+        <article class="studio-card" *ngFor="let mode of plannerModes">
+          <h4>{{ mode.title }}</h4>
+          <p>{{ mode.mood }}</p>
+          <a routerLink="/trips/new">Use this vibe</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" *ngIf="activeTab === 'explore'">
+      <div class="panel-header">
+        <h2>Explorer Deck</h2>
+        <a routerLink="/map" class="panel-link">Open map</a>
+      </div>
+
+      <div class="explore-grid">
+        <article class="destination-card" *ngFor="let country of recommendedDestinations">
+          <div class="stamp">✦</div>
+          <h4>{{ country }}</h4>
+          <p>Great match for your next memory trail.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" *ngIf="activeTab === 'insights'">
+      <div class="panel-header">
+        <h2>Insight Compass</h2>
+      </div>
+
+      <div class="insight-grid">
+        <article class="insight-card">
+          <h4>{{ timelineStats?.totalDays ?? geoStats?.totalDays ?? 0 }}</h4>
+          <p>Total days explored</p>
+        </article>
+        <article class="insight-card">
+          <h4>{{ timelineStats?.totalEntries ?? latestMemories.length }}</h4>
+          <p>Memories captured</p>
+        </article>
+        <article class="insight-card">
+          <h4>{{ geoStats?.totalCities ?? 0 }}</h4>
+          <p>Cities discovered</p>
+        </article>
+        <article class="insight-card">
+          <h4>{{ timelineStats?.topCountries?.[0]?.country || 'N/A' }}</h4>
+          <p>Top country</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" *ngIf="activeTab === 'journey'">
+      <div class="panel-header">
+        <h2>Guided Journey Path</h2>
+      </div>
+
+      <div class="journey-list">
+        <a class="journey-step" *ngFor="let step of journeySteps; let i = index" [routerLink]="step.route">
+          <div class="journey-index">{{ i + 1 }}</div>
+          <div class="journey-content">
+            <h4>{{ step.title }}</h4>
+            <p>{{ step.description }}</p>
+          </div>
+          <span class="journey-cta">{{ step.cta }}</span>
+        </a>
+      </div>
+
+      <div class="compass-row">
+        <a class="compass-card" *ngFor="let route of compassRoutes" [routerLink]="route.route">
+          <h4>{{ route.title }}</h4>
+          <p>{{ route.meta }}</p>
+        </a>
+      </div>
+    </section>
+  </ng-container>
+</div>

@@ -1,0 +1,132 @@
+<div class="map-page">
+
+  <!-- Sidebar -->
+  <aside class="map-sidebar" [class.map-sidebar--closed]="!sidebarOpen">
+
+    <div class="sidebar-inner">
+      <div class="sidebar-head">
+        <h2>World map</h2>
+        <button class="sidebar-toggle" (click)="toggleSidebar()" title="Collapse sidebar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Stats cards -->
+      <div class="stat-grid" *ngIf="stats">
+        <div class="stat-tile">
+          <span class="stat-tile__value">{{ stats.totalCountries }}</span>
+          <span class="stat-tile__label">Countries</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-tile__value">{{ stats.totalCities }}</span>
+          <span class="stat-tile__label">Cities</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-tile__value">{{ stats.totalTrips }}</span>
+          <span class="stat-tile__label">Trips</span>
+        </div>
+        <div class="stat-tile">
+          <span class="stat-tile__value">{{ stats.pinnedEntries }}</span>
+          <span class="stat-tile__label">Pinned</span>
+        </div>
+      </div>
+
+      <!-- Countries visited list -->
+      <div class="country-section" *ngIf="stats?.countriesList?.length">
+        <p class="section-label">Countries visited</p>
+        <div class="country-list">
+          <span class="country-chip" *ngFor="let c of stats!.countriesList">{{ c }}</span>
+        </div>
+      </div>
+
+      <!-- Recent pins list -->
+      <div class="pins-section" *ngIf="pins.length">
+        <p class="section-label">Recent locations</p>
+        <div class="pins-list">
+          <button
+            class="pin-row"
+            *ngFor="let pin of pins.slice(0, 20)"
+            [class.pin-row--active]="selectedPin?.id === pin.id"
+            (click)="flyToPin(pin)"
+          >
+            <div class="pin-thumb" *ngIf="pin.photos.length">
+              <img [src]="pin.photos[0].thumbnailUrl" [alt]="pin.title"/>
+            </div>
+            <div class="pin-thumb pin-thumb--empty" *ngIf="!pin.photos.length">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="pin-info">
+              <span class="pin-name">{{ pin.title }}</span>
+              <span class="pin-meta">
+                {{ pin.locationName || pin.city || pin.country }}
+                <span *ngIf="pin.date"> · {{ pin.date | date:'MMM y' }}</span>
+              </span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="sidebar-empty" *ngIf="!loading && pins.length === 0">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><circle cx="24" cy="24" r="20"/><path d="M24 4a20 20 0 0120 20M24 4a20 20 0 00-20 20"/><line x1="4" y1="24" x2="44" y2="24"/></svg>
+        <p>No pinned locations yet.</p>
+        <small>Add a location to an entry to see it on the map.</small>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- Sidebar open button (when closed) -->
+  <button class="sidebar-open-btn" *ngIf="!sidebarOpen" (click)="toggleSidebar()" title="Open sidebar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </button>
+
+  <!-- Map container -->
+  <div class="map-container">
+    <div #mapEl class="map-el"></div>
+
+    <!-- Loading overlay -->
+    <div class="map-loading" *ngIf="loading">
+      <div class="spinner-ring"></div>
+      <p>Loading your map...</p>
+    </div>
+
+    <!-- Entry popup -->
+    <div class="entry-popup" *ngIf="selectedPin">
+      <button class="popup-close" (click)="closePopup()">×</button>
+
+      <div class="popup-photo" *ngIf="selectedPin.photos.length">
+        <img [src]="selectedPin.photos[0].thumbnailUrl" [alt]="selectedPin.title"/>
+      </div>
+
+      <div class="popup-body">
+        <div class="popup-meta">
+          <span class="popup-date">{{ selectedPin.date | date:'MMM d, y' }}</span>
+          <span class="popup-mood" *ngIf="selectedPin.mood">
+            {{ moodEmojis[selectedPin.mood] }}
+          </span>
+        </div>
+        <h3 class="popup-title">{{ selectedPin.title }}</h3>
+        <p class="popup-location" *ngIf="selectedPin.locationName || selectedPin.city">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="12" height="12"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ getLocation(selectedPin) }}
+        </p>
+        <div class="popup-trip">
+          <span>From trip:</span>
+          <a [routerLink]="['/trips', selectedPin.trip.id]" class="popup-trip-link">
+            {{ selectedPin.trip.title }}
+          </a>
+        </div>
+        <a [routerLink]="['/trips', selectedPin.trip.id]" class="popup-btn">
+          View trip
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>

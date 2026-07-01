@@ -17,4 +17,12 @@ export const tripsRoutes: Routes = [
     path: ':id/edit',
     loadComponent: () => import('./trip-editor/trip-editor.component').then(m => m.TripEditorComponent),
   },
+  {
+    path: ':tripId/entries/new',
+    loadComponent: () => import('./trip-detail/entry-editor.component').then(m => m.EntryEditorComponent),
+  },
+  {
+    path: ':tripId/entries/:id/edit',
+    loadComponent: () => import('./trip-detail/entry-editor.component').then(m => m.EntryEditorComponent),
+  },
 ];

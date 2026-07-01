@@ -1,0 +1,218 @@
+.trips-page {
+  padding: 40px 48px;
+  max-width: 1100px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 4px;
+  }
+
+  p { font-size: 14px; color: #8a8a9a; margin: 0; }
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: #2a2a3e;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26,26,46,0.2);
+  }
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  padding: 7px 16px;
+  border: 1px solid #e2e0db;
+  background: #fff;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6a6a7a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover { border-color: #c8a97e; color: #1a1a2e; }
+
+  &.active {
+    background: #1a1a2e;
+    border-color: #1a1a2e;
+    color: #fff;
+  }
+}
+
+// ── Grid ──────────────────────────────────────────────
+.trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 20px;
+}
+
+.trip-card {
+  background: #fff;
+  border: 1px solid #ece9e2;
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  display: block;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+    border-color: #d8d4cc;
+  }
+}
+
+.trip-cover {
+  height: 160px;
+  background: #f0ede6;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trip-cover-placeholder {
+  color: #c8c2b8;
+}
+
+.trip-status-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 20px;
+
+  &[data-status="active"]    { background: #d1fae5; color: #065f46; }
+  &[data-status="completed"] { background: #dbeafe; color: #1e40af; }
+  &[data-status="draft"]     { background: #f3f4f6; color: #6b7280; }
+  &[data-status="archived"]  { background: #fef3c7; color: #92400e; }
+}
+
+.trip-card-body {
+  padding: 16px;
+}
+
+.trip-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trip-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #8a8a9a;
+  margin-bottom: 6px;
+}
+
+.trip-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #f0ede6;
+  color: #7a6a5a;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.trip-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #a0a0b0;
+
+  .dot { color: #d0cdc6; }
+}
+
+// ── Skeleton loading ──────────────────────────────────
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 20px;
+}
+
+.skeleton-card {
+  height: 260px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #f0ede6 25%, #e8e4dc 50%, #f0ede6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ── Empty state ───────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+  }
+
+  h3 { font-size: 18px; font-weight: 600; color: #3a3a4a; margin: 0 0 8px; }
+  p  { font-size: 14px; color: #9a9aaa; margin: 0 0 24px; }
+}
+
+// ── Responsive ────────────────────────────────────────
+@media (max-width: 600px) {
+  .trips-page { padding: 24px 20px; }
+  .trips-grid { grid-template-columns: 1fr; }
+}

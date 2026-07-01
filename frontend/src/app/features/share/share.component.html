@@ -1,0 +1,148 @@
+<!-- Loading -->
+<div class="share-page loading-state" *ngIf="loading">
+  <div class="spinner-ring"></div>
+</div>
+
+<!-- Not found -->
+<div class="share-page not-found-state" *ngIf="!loading && notFound">
+  <div class="not-found-inner">
+    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5" width="56" height="56">
+      <circle cx="32" cy="32" r="28"/>
+      <path d="M32 20v14M32 42v2"/>
+    </svg>
+    <h2>Trip not found</h2>
+    <p>This trip is either private or doesn't exist.</p>
+    <a routerLink="/" class="home-link">Go to WanderLog</a>
+  </div>
+</div>
+
+<!-- Trip content -->
+<div class="share-page" *ngIf="!loading && trip">
+
+  <!-- Hero -->
+  <div class="share-hero" [class.share-hero--no-cover]="!trip.coverImage">
+    <img *ngIf="trip.coverImage" [src]="trip.coverImage" [alt]="trip.title" class="hero-img"/>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <!-- WanderLog brand -->
+      <div class="hero-brand">
+        <span class="brand-star">✦</span>
+        <span class="brand-name">WanderLog</span>
+      </div>
+
+      <h1 class="hero-title">{{ trip.title }}</h1>
+
+      <div class="hero-meta">
+        <span *ngIf="trip.startDate">
+          {{ trip.startDate | date:'MMM d, y' }}
+          <ng-container *ngIf="trip.endDate"> — {{ trip.endDate | date:'MMM d, y' }}</ng-container>
+        </span>
+        <span class="meta-sep" *ngIf="trip.startDate && totalDuration">·</span>
+        <span *ngIf="totalDuration">{{ totalDuration }}</span>
+        <span class="meta-sep" *ngIf="trip.countries?.length">·</span>
+        <span *ngIf="trip.countries?.length">{{ trip.countries.join(', ') }}</span>
+      </div>
+
+      <!-- Author -->
+      <div class="hero-author" *ngIf="trip.user">
+        <div class="author-avatar">
+          <img *ngIf="trip.user.avatarUrl" [src]="trip.user.avatarUrl" [alt]="trip.user.name"/>
+          <span *ngIf="!trip.user.avatarUrl">{{ trip.user.name[0] }}</span>
+        </div>
+        <span>{{ trip.user.name }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky top bar -->
+  <div class="share-topbar">
+    <div class="topbar-inner">
+      <div class="topbar-stats">
+        <span class="topbar-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
+          {{ trip.entries?.length || trip.entryCount }} entries
+        </span>
+        <span class="topbar-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          {{ trip.photoCount }} photos
+        </span>
+        <span class="topbar-stat" *ngIf="trip.countries?.length">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          {{ trip.countries.length }} {{ trip.countries.length === 1 ? 'country' : 'countries' }}
+        </span>
+      </div>
+      <button class="share-btn" (click)="copyLink()" [class.copied]="copied">
+        <svg *ngIf="!copied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        <svg *ngIf="copied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ copied ? 'Copied!' : 'Copy link' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="share-body">
+
+    <!-- Description -->
+    <p class="trip-description" *ngIf="trip.description">{{ trip.description }}</p>
+
+    <!-- Tags -->
+    <div class="trip-tags" *ngIf="trip.tags?.length">
+      <span class="trip-tag" *ngFor="let t of trip.tags">{{ t.tag.name }}</span>
+    </div>
+
+    <!-- Entries -->
+    <div class="entries-section" *ngIf="trip.entries?.length">
+
+      <div class="entry-block" *ngFor="let entry of trip.entries">
+
+        <!-- Photo grid -->
+        <div class="entry-photos" *ngIf="entry.photos?.length">
+          <div class="photo-grid" [class.photo-grid--single]="entry.photos.length === 1"
+               [class.photo-grid--two]="entry.photos.length === 2"
+               [class.photo-grid--many]="entry.photos.length >= 3">
+            <div class="photo-item" *ngFor="let photo of entry.photos.slice(0, 5); let i = index"
+                 [class.photo-item--main]="i === 0 && entry.photos.length >= 3">
+              <img [src]="photo.url" [alt]="entry.title"/>
+              <div class="photo-more-overlay" *ngIf="i === 4 && entry.photos.length > 5">
+                +{{ entry.photos.length - 5 }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Entry text -->
+        <div class="entry-text">
+          <div class="entry-header">
+            <div class="entry-header__left">
+              <span class="entry-date">{{ entry.date | date:'EEEE, MMMM d, y' }}</span>
+              <span class="entry-mood" *ngIf="entry.mood">{{ moodEmojis[entry.mood] }}</span>
+              <span class="entry-weather" *ngIf="entry.weather">{{ entry.weather }}</span>
+            </div>
+          </div>
+
+          <h2 class="entry-title">{{ entry.title }}</h2>
+
+          <div class="entry-location" *ngIf="entry.locationName || entry.city">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ locationDisplay(entry) }}
+          </div>
+        </div>
+
+        <div class="entry-divider"></div>
+      </div>
+    </div>
+
+    <!-- Footer CTA -->
+    <div class="share-footer">
+      <div class="footer-brand">
+        <span class="brand-star">✦</span>
+        <span class="brand-name">WanderLog</span>
+      </div>
+      <p>Document your own travels</p>
+      <a routerLink="/auth/register" class="footer-cta">Start your journal — it's free</a>
+    </div>
+
+  </div>
+</div>

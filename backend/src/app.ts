@@ -17,6 +17,9 @@ import userRoutes from './routes/user.routes';
 import tripRoutes from './routes/trip.routes';
 import entryRoutes from './routes/entry.routes';
 import photoRoutes from './routes/photo.routes';
+import geoRoutes from './routes/geo.routes';
+import timelineRoutes from './routes/timeline.routes';
+import shareRoutes from './routes/share.routes';
 
 // Passport strategies
 import './config/passport';
@@ -43,6 +46,13 @@ app.use(rateLimit({
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
 }));
+
+// Auth-specific stricter rate limit (applied per route)
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Too many auth attempts, please try again later.' },
+});
 
 // ── Request Parsing ───────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
@@ -74,6 +84,9 @@ apiRouter.use('/users', userRoutes);
 apiRouter.use('/trips', tripRoutes);
 apiRouter.use('/trips/:tripId/entries', entryRoutes);
 apiRouter.use('/entries/:entryId/photos', photoRoutes);
+apiRouter.use('/geo', geoRoutes);
+apiRouter.use('/timeline', timelineRoutes);
+apiRouter.use('/share', shareRoutes);
 
 app.use(config.apiPrefix, apiRouter);
 

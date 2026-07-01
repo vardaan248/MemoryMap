@@ -1,0 +1,199 @@
+<div class="entry-editor-page">
+
+  <div class="editor-header">
+    <a [routerLink]="['/trips', tripId]" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to trip
+    </a>
+    <h1>{{ isEditing ? 'Edit entry' : 'New entry' }}</h1>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="entry-layout">
+
+      <!-- ── Left: main content ── -->
+      <div class="entry-main">
+
+        <!-- Title -->
+        <div class="field" [class.field--error]="form.get('title')?.invalid && form.get('title')?.touched">
+          <input type="text" formControlName="title" placeholder="Entry title" class="title-input"/>
+          <span class="field-hint">Required. Keep it short and clear.</span>
+          <span class="field-error" *ngIf="form.get('title')?.hasError('required') && form.get('title')?.touched">Title is required.</span>
+          <span class="field-error" *ngIf="form.get('title')?.hasError('maxlength') && form.get('title')?.touched">Title must be 120 characters or less.</span>
+        </div>
+
+        <!-- Rich text toolbar -->
+        <div class="toolbar">
+          <button type="button" class="toolbar-btn" [class.active]="isActive('bold')" (click)="toggleBold()" title="Bold">
+            <strong>B</strong>
+          </button>
+          <button type="button" class="toolbar-btn" [class.active]="isActive('italic')" (click)="toggleItalic()" title="Italic">
+            <em>I</em>
+          </button>
+          <div class="toolbar-divider"></div>
+          <button type="button" class="toolbar-btn" [class.active]="isActive('bulletList')" (click)="toggleBulletList()" title="Bullet list">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="toolbar-btn" [class.active]="isActive('taskList')" (click)="toggleTaskList()" title="Checklist">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </button>
+          <div class="toolbar-divider"></div>
+          <button type="button" class="toolbar-btn" (click)="openPhotoPicker()" title="Embed photo in text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </button>
+        </div>
+
+        <!-- Tiptap editor mount point -->
+        <div class="editor-wrap">
+          <div #editorEl></div>
+        </div>
+
+      </div>
+
+      <!-- ── Right: metadata sidebar ── -->
+      <div class="entry-sidebar">
+
+        <!-- Date -->
+        <div class="sidebar-section">
+          <label class="sidebar-label">Date <span class="required-dot">*</span></label>
+          <input type="date" formControlName="date" class="sidebar-input"/>
+          <p class="sidebar-help">Required</p>
+        </div>
+
+        <!-- Location -->
+        <div class="sidebar-section">
+          <label class="sidebar-label">Location</label>
+          <div class="location-search-wrap">
+            <input
+              type="text"
+              [value]="locationQuery"
+              (input)="onLocationQueryInput($any($event.target).value)"
+              (blur)="clearLocationSuggestions()"
+              placeholder="Search place (min 3 letters)"
+              class="sidebar-input"
+              autocomplete="off"
+            />
+            <div class="location-suggestions" *ngIf="locationSuggestions.length > 0">
+              <button
+                type="button"
+                class="location-option"
+                *ngFor="let option of locationSuggestions"
+                (mousedown)="pickLocation(option)"
+              >
+                <span class="location-option-label">{{ option.label }}</span>
+                <span class="location-option-meta" *ngIf="option.city || option.country">{{ option.city }}{{ option.city && option.country ? ', ' : '' }}{{ option.country }}</span>
+              </button>
+            </div>
+          </div>
+          <p class="sidebar-help" *ngIf="searchingLocations">Searching places...</p>
+          <p class="sidebar-help" *ngIf="!searchingLocations">Optional. Pick from search or click map pin to auto-fill details.</p>
+          <div class="sidebar-row">
+            <input type="text" formControlName="city" placeholder="City (auto)" class="sidebar-input" readonly/>
+            <input type="text" formControlName="country" placeholder="Country (auto)" class="sidebar-input" readonly/>
+          </div>
+
+          <!-- Mini map for picking coordinates -->
+          <div class="mini-map-wrap">
+            <div #miniMapEl class="mini-map-el"></div>
+            <p class="mini-map-hint" *ngIf="!pickedLat">Click map to pin and auto-fetch city/country</p>
+            <p class="mini-map-coords" *ngIf="pickedLat">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="11" height="11"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {{ pickedLat | number:'1.4-4' }}, {{ pickedLng | number:'1.4-4' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Mood -->
+        <div class="sidebar-section">
+          <label class="sidebar-label">Mood</label>
+          <div class="mood-grid">
+            <button
+              type="button"
+              class="mood-btn"
+              *ngFor="let m of moods"
+              [class.active]="selectedMood === m.value"
+              (click)="selectedMood = selectedMood === m.value ? '' : m.value"
+              [title]="m.label"
+            >
+              <span class="mood-emoji">{{ m.emoji }}</span>
+              <span class="mood-label">{{ m.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Weather -->
+        <div class="sidebar-section">
+          <label class="sidebar-label">Weather</label>
+          <div class="weather-grid">
+            <button
+              type="button"
+              class="weather-btn"
+              *ngFor="let w of weatherOptions"
+              [class.active]="selectedWeather === w"
+              (click)="selectedWeather = selectedWeather === w ? '' : w"
+            >{{ w }}</button>
+          </div>
+        </div>
+
+        <!-- Photo upload -->
+        <div class="sidebar-section">
+          <label class="sidebar-label">Photos</label>
+          <input #photoInput type="file" accept="image/*" multiple hidden (change)="onFilesSelected($event)"/>
+
+          <!-- Existing photos (editing mode) -->
+          <div class="photo-grid" *ngIf="photos.length > 0">
+            <div class="photo-thumb" *ngFor="let photo of photos" [class.is-cover]="coverPhotoId === photo.id">
+              <img [src]="photo.thumbnailUrl" [alt]="'Photo'"/>
+              <div class="photo-actions">
+                <button type="button" class="photo-action-btn cover" (click)="setExistingCover(photo.id)" title="Set as cover">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </button>
+                <button type="button" class="photo-action-btn delete" (click)="deleteExistingPhoto(photo.id)" title="Delete">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                </button>
+              </div>
+              <div class="cover-badge" *ngIf="coverPhotoId === photo.id">Cover</div>
+            </div>
+          </div>
+
+          <!-- Pending new photos -->
+          <div class="photo-grid" *ngIf="pendingPreviews.length > 0">
+            <div class="photo-thumb pending" *ngFor="let p of pendingPreviews; let i = index" [class.is-cover]="p.isCover">
+              <img [src]="p.url" alt="Preview"/>
+              <div class="photo-actions">
+                <button type="button" class="photo-action-btn cover" (click)="setPendingCover(i)" title="Set as cover">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </button>
+                <button type="button" class="photo-action-btn delete" (click)="removePending(i)" title="Remove">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div class="cover-badge" *ngIf="p.isCover">Cover</div>
+            </div>
+          </div>
+
+          <button type="button" class="upload-btn" (click)="openPhotoPicker()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add photos
+          </button>
+          <p class="upload-hint">Click a photo to set it as the trip cover.</p>
+        </div>
+
+        <!-- Error -->
+        <div class="api-error" *ngIf="error">{{ error }}</div>
+
+        <!-- Submit -->
+        <div class="sidebar-actions">
+          <a [routerLink]="['/trips', tripId]" class="btn-secondary">Cancel</a>
+          <button type="submit" class="btn-primary" [disabled]="saving">
+            <span class="spinner" *ngIf="saving"></span>
+            <span *ngIf="!saving && !uploadingPhotos">Save entry</span>
+            <span *ngIf="uploadingPhotos">Uploading...</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+</div>

@@ -34,8 +34,8 @@ import { CommonModule } from '@angular/common';
       padding: 48px;
       p { font-size: 15px; color: #7a7a8a; margin-top: 16px; }
       a { color: #c8a97e; text-decoration: none; }
-      &--error svg { color: #e05a5a; }
     }
+    .callback-card--error svg { color: #e05a5a; }
     .spinner-ring {
       width: 40px;
       height: 40px;

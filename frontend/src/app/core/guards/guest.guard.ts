@@ -1,18 +1,17 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { map, take } from 'rxjs';
-import { selectIsAuthenticated } from '../../store/auth/auth.selectors';
+import { filter, map, switchMap, take } from 'rxjs';
+import { selectAuthInitialized, selectIsAuthenticated } from '../../store/auth/auth.selectors';
 
 export const guestGuard: CanActivateFn = () => {
   const store = inject(Store);
   const router = inject(Router);
 
-  return store.select(selectIsAuthenticated).pipe(
+  return store.select(selectAuthInitialized).pipe(
+    filter((initialized) => initialized),
     take(1),
-    map((isAuth) => {
-      if (!isAuth) return true;
-      return router.createUrlTree(['/dashboard']);
-    })
+    switchMap(() => store.select(selectIsAuthenticated).pipe(take(1))),
+    map((isAuth) => (!isAuth ? true : router.createUrlTree(['/dashboard'])))
   );
 };

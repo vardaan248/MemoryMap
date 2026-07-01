@@ -1,0 +1,192 @@
+<!-- Loading skeleton -->
+<div class="trip-detail-page" *ngIf="loading">
+  <div class="skeleton-hero"></div>
+  <div class="skeleton-body">
+    <div class="skeleton-line wide"></div>
+    <div class="skeleton-line medium"></div>
+  </div>
+</div>
+
+<!-- Error -->
+<div class="trip-detail-page error-state" *ngIf="!loading && error">
+  <p>{{ error }}</p>
+  <a routerLink="/trips">Back to trips</a>
+</div>
+
+<!-- Trip content -->
+<div class="trip-detail-page" *ngIf="!loading && trip">
+
+  <!-- Hero cover image -->
+  <div class="trip-hero" [class.trip-hero--no-cover]="!trip.coverImage">
+    <img *ngIf="trip.coverImage" [src]="trip.coverImage" [alt]="trip.title" class="hero-img"/>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-breadcrumb">
+        <a routerLink="/trips" class="breadcrumb-link">Trips</a>
+        <span>/</span>
+        <span>{{ trip.title }}</span>
+      </div>
+      <h1 class="hero-title">{{ trip.title }}</h1>
+      <div class="hero-meta">
+        <span *ngIf="trip.startDate">
+          {{ trip.startDate | date:'MMM d' }}
+          <ng-container *ngIf="trip.endDate"> — {{ trip.endDate | date:'MMM d, y' }}</ng-container>
+          <span class="meta-sep" *ngIf="totalDuration"> · {{ totalDuration }}</span>
+        </span>
+        <span *ngIf="trip.countries.length" class="meta-sep">·</span>
+        <span *ngIf="trip.countries.length">{{ trip.countries.join(', ') }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action bar -->
+  <div class="action-bar">
+    <div class="action-bar__stats">
+      <span class="stat-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
+        {{ trip.entryCount }} {{ trip.entryCount === 1 ? 'entry' : 'entries' }}
+      </span>
+      <span class="stat-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        {{ trip.photoCount }} photos
+      </span>
+      <span class="stat-pill status" [attr.data-status]="trip.status.toLowerCase()">{{ trip.status }}</span>
+    </div>
+
+    <div class="action-bar__actions">
+      <!-- Share button -->
+      <button class="action-btn" [class.active]="trip.isPublic" (click)="showShareModal = true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        Share
+      </button>
+
+      <a [routerLink]="['/trips', tripId, 'edit']" class="action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit
+      </a>
+
+      <button class="action-btn danger" (click)="deleteTrip()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        Delete
+      </button>
+    </div>
+  </div>
+
+  <!-- Main body -->
+  <div class="trip-body">
+
+    <!-- Tags -->
+    <div class="trip-tags" *ngIf="trip.tags?.length">
+      <span class="trip-tag" *ngFor="let t of trip.tags">{{ t.tag.name }}</span>
+    </div>
+
+    <!-- Description -->
+    <p class="trip-description" *ngIf="trip.description">{{ trip.description }}</p>
+
+    <!-- Entries section -->
+    <div class="entries-section">
+      <div class="entries-header">
+        <h2>Journal entries</h2>
+        <a [routerLink]="['/trips', tripId, 'entries', 'new']" class="btn-add-entry">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add entry
+        </a>
+      </div>
+
+      <!-- Empty entries state -->
+      <div class="entries-empty" *ngIf="!trip.entries?.length">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+          <rect x="8" y="6" width="32" height="36" rx="3"/>
+          <line x1="16" y1="16" x2="32" y2="16"/>
+          <line x1="16" y1="22" x2="32" y2="22"/>
+          <line x1="16" y1="28" x2="24" y2="28"/>
+        </svg>
+        <p>No entries yet. Start writing about your trip.</p>
+        <a [routerLink]="['/trips', tripId, 'entries', 'new']" class="btn-add-entry">Write first entry</a>
+      </div>
+
+      <!-- Entries timeline -->
+      <div class="entries-timeline" *ngIf="trip.entries?.length">
+        <div class="entry-card" *ngFor="let entry of trip.entries">
+
+          <!-- Timeline dot -->
+          <div class="timeline-dot">
+            <div class="dot-inner"></div>
+          </div>
+
+          <!-- Entry content -->
+          <div class="entry-content-card">
+            <!-- Photo strip (if any) -->
+            <div class="entry-photos" *ngIf="entry.photos?.length">
+              <div class="photo-strip">
+                <img
+                  *ngFor="let photo of entry.photos.slice(0, 4)"
+                  [src]="photo.thumbnailUrl"
+                  [alt]="entry.title"
+                  class="photo-strip__img"
+                />
+                <div class="photo-more" *ngIf="entry.photos.length > 4">
+                  +{{ entry.photos.length - 4 }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Text content -->
+            <div class="entry-body">
+              <div class="entry-meta-row">
+                <span class="entry-date">{{ entry.date | date:'EEE, MMM d, y' }}</span>
+                <span class="entry-mood" *ngIf="entry.mood" [title]="entry.mood">
+                  {{ moodEmojis[entry.mood] }}
+                </span>
+                <span class="entry-weather" *ngIf="entry.weather">{{ entry.weather }}</span>
+              </div>
+
+              <h3 class="entry-title">{{ entry.title }}</h3>
+
+              <div class="entry-location" *ngIf="entry.locationName || entry.city">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="12" height="12"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ getLocation(entry) }}
+              </div>
+
+              <!-- Entry actions -->
+              <div class="entry-actions">
+                <a [routerLink]="['/trips', tripId, 'entries', entry.id, 'edit']" class="entry-action-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Edit
+                </a>
+                <button class="entry-action-btn danger" (click)="confirmDeleteEntry(entry.id)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-backdrop" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3>Delete this entry?</h3>
+    <p>This action cannot be undone. All photos in this entry will also be deleted.</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-danger" (click)="deleteEntry()">Delete entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Share modal -->
+<app-share-modal
+  *ngIf="showShareModal && trip"
+  [slug]="trip.slug"
+  [title]="trip.title"
+  [isPublic]="trip.isPublic"
+  (closed)="showShareModal = false"
+></app-share-modal>

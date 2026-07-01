@@ -3,9 +3,9 @@ import { body } from 'express-validator';
 import passport from 'passport';
 
 import * as authController from '../controllers/auth.controller';
-import { authLimiter } from '../middleware/rateLimiter';
 import { requireAuth } from '../middleware/requireAuth';
 import { validate } from '../middleware/validate';
+import { authLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 

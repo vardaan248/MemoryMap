@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import * as AuthActions from '../../store/auth/auth.actions';
@@ -14,6 +14,7 @@ const REFRESH_KEY = 'wl_refresh';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}/auth`;
+  private initializationPromise: Promise<void> | null = null;
 
   constructor(
     private http: HttpClient,
@@ -49,19 +50,28 @@ export class AuthService {
   }
 
   // ── Initialize auth state on app boot ────────────────
-  initializeAuth(): void {
+  initializeAuth(): Promise<void> {
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+
     const token = this.getAccessToken();
     if (!token) {
       this.store.dispatch(AuthActions.authInitialized({ user: null }));
-      return;
+      this.initializationPromise = Promise.resolve();
+      return this.initializationPromise;
     }
-    this.fetchCurrentUser().subscribe({
-      next: (user) => this.store.dispatch(AuthActions.authInitialized({ user })),
-      error: () => {
+
+    this.initializationPromise = firstValueFrom(this.fetchCurrentUser())
+      .then((user) => {
+        this.store.dispatch(AuthActions.authInitialized({ user }));
+      })
+      .catch(() => {
         this.clearTokens();
         this.store.dispatch(AuthActions.authInitialized({ user: null }));
-      },
-    });
+      });
+
+    return this.initializationPromise;
   }
 
   // ── Handle Google OAuth callback (token params in URL) ─

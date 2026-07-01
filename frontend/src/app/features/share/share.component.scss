@@ -1,0 +1,427 @@
+// ── Page shell ────────────────────────────────────────
+.share-page {
+  min-height: 100vh;
+  background: #f8f7f4;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.not-found-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.not-found-inner {
+  text-align: center;
+  padding: 80px 20px;
+
+  svg { color: #d0cdc6; margin: 0 auto 20px; display: block; }
+
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 26px;
+    color: #1a1a2e;
+    margin: 0 0 8px;
+  }
+
+  p { font-size: 14px; color: #8a8a9a; margin: 0 0 24px; }
+}
+
+.home-link {
+  display: inline-block;
+  padding: 10px 22px;
+  background: #1a1a2e;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+  &:hover { background: #2a2a3e; }
+}
+
+// ── Hero ──────────────────────────────────────────────
+.share-hero {
+  position: relative;
+  height: 420px;
+  background: #1a1a2e;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+
+  &--no-cover {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2e2a50 100%);
+  }
+}
+
+.hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(10,10,20,0.92) 0%, rgba(10,10,20,0.1) 60%);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  padding: 0 clamp(20px, 5vw, 80px) 40px;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 20px;
+
+  .brand-star { font-size: 16px; color: #c8a97e; }
+  .brand-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.6);
+  }
+}
+
+.hero-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+
+  .meta-sep { color: rgba(255,255,255,0.25); }
+}
+
+.hero-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 500;
+}
+
+.author-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(200,169,126,0.3);
+  border: 1.5px solid rgba(200,169,126,0.5);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c8a97e;
+  font-size: 12px;
+  font-weight: 600;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+// ── Top bar ───────────────────────────────────────────
+.share-topbar {
+  background: #fff;
+  border-bottom: 1px solid #ece9e2;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 12px clamp(20px, 5vw, 80px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.topbar-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.topbar-stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #6a6a7a;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &.copied { background: #10b981; }
+  &:hover:not(.copied) { background: #2a2a3e; }
+}
+
+// ── Body ──────────────────────────────────────────────
+.share-body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px clamp(20px, 5vw, 80px) 80px;
+}
+
+.trip-description {
+  font-size: 16px;
+  line-height: 1.8;
+  color: #4a4a5a;
+  margin-bottom: 20px;
+}
+
+.trip-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+
+.trip-tag {
+  font-size: 12px;
+  padding: 3px 10px;
+  background: #f0ede6;
+  color: #7a6a5a;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+// ── Entries ───────────────────────────────────────────
+.entries-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.entry-block {
+  padding-bottom: 40px;
+}
+
+.entry-divider {
+  height: 1px;
+  background: #ece9e2;
+  margin-top: 40px;
+}
+
+.entry-block:last-child .entry-divider {
+  display: none;
+}
+
+// ── Photo grids ───────────────────────────────────────
+.entry-photos {
+  margin-bottom: 20px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.photo-grid {
+  display: grid;
+  gap: 3px;
+
+  &--single {
+    grid-template-columns: 1fr;
+
+    .photo-item { height: 360px; }
+  }
+
+  &--two {
+    grid-template-columns: 1fr 1fr;
+
+    .photo-item { height: 260px; }
+  }
+
+  &--many {
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 200px 200px;
+
+    .photo-item { height: 200px; }
+    .photo-item--main {
+      grid-row: span 2;
+      height: 403px;
+    }
+  }
+}
+
+.photo-item {
+  position: relative;
+  overflow: hidden;
+  background: #f0ede6;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    &:hover { transform: scale(1.03); }
+  }
+}
+
+.photo-more-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15,15,25,0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+// ── Entry text ────────────────────────────────────────
+.entry-text { }
+
+.entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.entry-date   { font-size: 12px; color: #a0a0b0; font-weight: 500; }
+.entry-mood   { font-size: 16px; line-height: 1; }
+.entry-weather{ font-size: 12px; color: #8a8a9a; }
+
+.entry-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 8px;
+  line-height: 1.25;
+}
+
+.entry-location {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #8a8a9a;
+  margin-bottom: 14px;
+}
+
+// ── Footer CTA ────────────────────────────────────────
+.share-footer {
+  margin-top: 60px;
+  text-align: center;
+  padding: 40px 32px;
+  background: #1a1a2e;
+  border-radius: 20px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  .brand-star { font-size: 18px; color: #c8a97e; }
+  .brand-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+  }
+}
+
+.share-footer p {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  margin: 0 0 20px;
+}
+
+.footer-cta {
+  display: inline-block;
+  padding: 12px 28px;
+  background: #c8a97e;
+  color: #1a1a2e;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.18s;
+
+  &:hover {
+    background: #d4b98a;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(200,169,126,0.3);
+  }
+}
+
+// ── Spinner ───────────────────────────────────────────
+.spinner-ring {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e8e4dc;
+  border-top-color: #c8a97e;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 120px auto;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Responsive ────────────────────────────────────────
+@media (max-width: 600px) {
+  .share-hero { height: 340px; }
+
+  .photo-grid--many {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+
+    .photo-item { height: 160px; }
+    .photo-item--main { grid-row: span 1; height: 160px; }
+  }
+}

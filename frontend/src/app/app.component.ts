@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
@@ -10,29 +10,59 @@ import { selectCurrentUser, selectIsAuthenticated } from './store/auth/auth.sele
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   template: `
-    <div class="app-shell" [class.authenticated]="isAuthenticated$ | async">
+    <div
+      class="app-shell"
+      [class.authenticated]="isAuthenticated$ | async"
+      [class.mobile-nav-open]="isMobileNavOpen"
+    >
+      <header class="mobile-topbar" *ngIf="isAuthenticated$ | async">
+        <button
+          type="button"
+          class="menu-toggle"
+          [attr.aria-expanded]="isMobileNavOpen"
+          aria-label="Toggle navigation"
+          (click)="toggleMobileNav()"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="mobile-brand">
+          <span class="logo-icon">✦</span>
+          <span class="logo-text">MemoryMap</span>
+        </div>
+      </header>
+
+      <button
+        type="button"
+        class="sidebar-overlay"
+        *ngIf="(isAuthenticated$ | async) && isMobileNavOpen"
+        aria-label="Close navigation"
+        (click)="closeMobileNav()"
+      ></button>
+
       <!-- Sidebar (shown only when logged in) -->
-      <aside class="sidebar" *ngIf="isAuthenticated$ | async">
+      <aside class="sidebar" [class.open]="isMobileNavOpen" *ngIf="isAuthenticated$ | async">
         <div class="sidebar-logo">
           <span class="logo-icon">✦</span>
           <span class="logo-text">MemoryMap</span>
         </div>
 
         <nav class="sidebar-nav">
-          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" (click)="closeMobileNav()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
               <polyline points="9,22 9,12 15,12 15,22"/>
             </svg>
             <span>Home</span>
           </a>
-          <a routerLink="/trips" routerLinkActive="active" class="nav-item">
+          <a routerLink="/trips" routerLinkActive="active" class="nav-item" (click)="closeMobileNav()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3-8.59A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.29 6.29l1.52-1.52a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
             </svg>
             <span>Trips</span>
           </a>
-          <a routerLink="/map" routerLinkActive="active" class="nav-item">
+          <a routerLink="/map" routerLinkActive="active" class="nav-item" (click)="closeMobileNav()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
               <line x1="8" y1="2" x2="8" y2="18"/>
@@ -40,7 +70,7 @@ import { selectCurrentUser, selectIsAuthenticated } from './store/auth/auth.sele
             </svg>
             <span>Map</span>
           </a>
-          <a routerLink="/timeline" routerLinkActive="active" class="nav-item">
+          <a routerLink="/timeline" routerLinkActive="active" class="nav-item" (click)="closeMobileNav()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <line x1="8" y1="6" x2="21" y2="6"/>
               <line x1="8" y1="12" x2="21" y2="12"/>
@@ -73,17 +103,35 @@ import { selectCurrentUser, selectIsAuthenticated } from './store/auth/auth.sele
   `,
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   isAuthenticated$ = this.store.select(selectIsAuthenticated);
   currentUser$ = this.store.select(selectCurrentUser);
+  isMobileNavOpen = false;
 
   constructor(private store: Store, private authService: AuthService) {}
 
-  ngOnInit() {
-    this.authService.initializeAuth();
+  toggleMobileNav() {
+    this.isMobileNavOpen = !this.isMobileNavOpen;
+  }
+
+  closeMobileNav() {
+    this.isMobileNavOpen = false;
+  }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    if (window.innerWidth > 768) {
+      this.closeMobileNav();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    this.closeMobileNav();
   }
 
   logout() {
+    this.closeMobileNav();
     this.authService.logout();
   }
 }

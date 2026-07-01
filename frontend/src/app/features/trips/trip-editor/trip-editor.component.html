@@ -1,0 +1,87 @@
+<div class="editor-page">
+  <div class="editor-header">
+    <a routerLink="/trips" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+      Trips
+    </a>
+    <h1>{{ isEditing ? 'Edit trip' : 'New trip' }}</h1>
+  </div>
+
+  <div class="editor-card">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+      <div class="field" [class.field--error]="form.get('title')?.invalid && form.get('title')?.touched">
+        <label>Trip title *</label>
+        <input type="text" formControlName="title" placeholder="e.g. Summer in Italy" class="input-lg"/>
+        <span class="field-error" *ngIf="form.get('title')?.invalid && form.get('title')?.touched">
+          Title is required.
+        </span>
+      </div>
+
+      <div class="field">
+        <label>Description</label>
+        <textarea formControlName="description" placeholder="What's this trip about?" rows="3"></textarea>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Start date</label>
+          <input type="date" formControlName="startDate"/>
+        </div>
+        <div class="field">
+          <label>End date</label>
+          <input type="date" formControlName="endDate"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Status</label>
+        <select formControlName="status">
+          <option value="DRAFT">Draft</option>
+          <option value="ACTIVE">Active</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="ARCHIVED">Archived</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Tags <span class="label-hint">Press Enter to add</span></label>
+        <div class="tag-input-wrap">
+          <span class="tag-chip" *ngFor="let tag of tags">
+            {{ tag }}
+            <button type="button" (click)="removeTag(tag)" class="tag-remove">×</button>
+          </span>
+          <input
+            type="text"
+            class="tag-input"
+            [(ngModel)]="tagInput"
+            [ngModelOptions]="{standalone: true}"
+            (keydown.enter)="addTag($event)"
+            placeholder="{{ tags.length === 0 ? 'adventure, europe, solo...' : '' }}"
+          />
+        </div>
+      </div>
+
+      <div class="field checkbox-field">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="isPublic"/>
+          <span class="checkbox-text">
+            Make this trip public
+            <span class="checkbox-hint">Anyone with the link can view it</span>
+          </span>
+        </label>
+      </div>
+
+      <div class="api-error" *ngIf="error">{{ error }}</div>
+
+      <div class="form-actions">
+        <a routerLink="/trips" class="btn-secondary">Cancel</a>
+        <button type="submit" class="btn-primary" [disabled]="saving">
+          <span class="spinner" *ngIf="saving"></span>
+          <span *ngIf="!saving">{{ isEditing ? 'Save changes' : 'Create trip' }}</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
